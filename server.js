@@ -168,7 +168,7 @@ app.delete("/api/members/:id",auth,allow("admin"),(req,res)=>{
   if(m.profile_photo_path){const f=path.join(photoDir,path.basename(m.profile_photo_path));if(fs.existsSync(f))fs.unlinkSync(f);}
   audit(req,req.user.id,"member.delete","member",id);res.json({ok:true});
 });
-app.post("/api/members/:id/photo",auth,allow("admin","secretaire"),photoUpload.single("photo"),(req,res)=>{
+app.post("/api/members/:id/photo",auth,(req,res,next)=>{const target=Number(req.params.id);if(["admin","secretaire"].includes(req.user.role)||(req.user.role==="membre"&&req.user.memberId===target))return next();return res.status(403).json({error:"Vous ne pouvez modifier que votre propre photo de profil."});},photoUpload.single("photo"),(req,res)=>{
   if(!req.file)return res.status(400).json({error:"Sélectionnez une photo JPG, PNG ou WEBP (5 Mo maximum)."});
   if(!fileSignature(req.file,"photo")){fs.unlinkSync(req.file.path);return res.status(400).json({error:"Le fichier envoyé n'est pas une image valide."});}
   const id=Number(req.params.id),m=db.prepare("SELECT profile_photo_path FROM members WHERE id=?").get(id);
