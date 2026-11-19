@@ -1,4 +1,5 @@
 "use strict";
+require("dotenv").config();
 const crypto=require("node:crypto"),path=require("node:path"),Database=require("better-sqlite3"),root=path.resolve(__dirname,"..");
 const dbPath=path.resolve(process.env.LAS_DB_PATH||path.join(process.env.LAS_DATA_DIR||path.join(root,"data"),"las.sqlite"));
 const [raw,display,password]=process.argv.slice(2),username=String(raw||"").trim().toLowerCase();
