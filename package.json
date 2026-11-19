@@ -4,12 +4,15 @@
   "private": true,
   "description": "Portail public et espace membre sécurisé de l'ASBL Les Amis de la Semence",
   "type": "commonjs",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "db:init": "node scripts/init-db.js",
-    "db:import-legacy": "node scripts/import-legacy.js"
+    "db:import-legacy": "node scripts/import-legacy.js",
+    "admin:create": "node scripts/create-admin.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",
