@@ -281,6 +281,7 @@ app.post("/api/admin/events",auth,allow("admin","secretaire"),(req,res)=>{
   const r=db.prepare("INSERT INTO events(title,body,event_date,location,published) VALUES(?,?,?,?,1)").run(title,body||null,date,location||null);audit(req,req.user.id,"event.publish","event",r.lastInsertRowid);res.status(201).json({id:Number(r.lastInsertRowid)});
 });
 
+app.get("/logo-las.jpg",(_req,res)=>res.sendFile(path.join(root,"logo-las.jpg")));
 app.use(express.static(path.join(root,"public"),{index:"index.html",dotfiles:"deny",fallthrough:true,maxAge:process.env.NODE_ENV==="production"?"1h":0}));
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(root,"public","index.html")));
 app.use((err,_req,res,_next)=>{
