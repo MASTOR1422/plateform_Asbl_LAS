@@ -11,7 +11,6 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "db:init": "node scripts/init-db.js",
-    "db:import-legacy": "node scripts/import-legacy.js",
     "admin:create": "node scripts/create-admin.js"
   },
   "dependencies": {
