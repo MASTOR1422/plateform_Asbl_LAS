@@ -1,5 +1,9 @@
 # ASBL LES AMIS DE LA SEMENCE (LAS) — Portail statique
 
+> **AVERTISSEMENT DE SÉCURITÉ : NE PAS UTILISER EN PRODUCTION.**
+> Cette version télécharge une base SQLite dans le navigateur et applique les rôles côté client. Les informations stockées dans cette base ne sont pas protégées par l'écran de connexion. GitHub Pages publie un site accessible au public même si le dépôt source est privé. Une migration vers une API serveur et une base privée est nécessaire avant tout usage avec des données réelles.
+
+
 Portail de gestion des membres et cotisations, **100 % statique**, déployable sur
 GitHub Pages. Aucun Supabase, aucun Vercel, aucun backend. La base de données est
 un fichier **SQLite** (`las-members.sqlite`) logé dans le dépôt, lu dans le
@@ -39,14 +43,7 @@ Les utilisateurs et les *hashes* de mots de passe sont stockés dans la table
 `users` du fichier `las-members.sqlite`. Comme le dépôt est privé, seuls les
 administrateurs du dépôt peuvent lire ces *hashes*.
 
-**Comptes de démonstration (à changer après le premier déploiement) :**
-
-| Rôle        | Identifiant              | Mot de passe   |
-|-------------|--------------------------|----------------|
-| Admin       | admin@las-asbl.org       | LasDemo2026!   |
-| Trésorier   | tresorier@las-asbl.org   | LasDemo2026!   |
-| Secrétaire  | secretaire@las-asbl.org  | LasDemo2026!   |
-| Membre      | membre@las-asbl.org      | LasDemo2026!   |
+**Comptes de démonstration :** les identifiants historiques ont été retirés de cette documentation car ils doivent être considérés comme compromis. Désactivez ces comptes dans toute copie existante et créez des identifiants uniques après migration vers une authentification serveur. N'utilisez pas de comptes ou mots de passe publiés dans Git.
 
 ### Changer les mots de passe
 
