@@ -281,7 +281,7 @@ app.post("/api/admin/events",auth,allow("admin","secretaire"),(req,res)=>{
 });
 
 app.use(express.static(path.join(root,"public"),{index:"index.html",dotfiles:"deny",fallthrough:true,maxAge:process.env.NODE_ENV==="production"?"1h":0}));
-app.get("*",(req,res)=>res.sendFile(path.join(root,"public","index.html")));
+app.get("/{*splat}",(req,res)=>res.sendFile(path.join(root,"public","index.html")));
 app.use((err,_req,res,_next)=>{
   if(err instanceof multer.MulterError)return res.status(400).json({error:err.code==="LIMIT_FILE_SIZE"?"Fichier trop volumineux.": "Erreur d'envoi du fichier."});
   res.status(400).json({error:err.message||"Requête invalide."});
