@@ -17,7 +17,6 @@ Prérequis : Node.js 22+, npm et un serveur disposant d'un disque persistant.
 ```bash
 git clone https://github.com/MASTOR1422/plateform_Asbl_LAS.git
 cd plateform_Asbl_LAS
-git checkout migration/node-sqlite-public-portal
 npm install
 cp .env.example .env
 ```
@@ -37,6 +36,8 @@ npm run admin:create -- admin "Administrateur LAS" "RemplacerParUnMotDePasseLong
 ```
 
 Ne jamais publier le mot de passe, le fichier .env, data/las.sqlite ou le contenu de storage/.
+
+Lancer les contrôles automatiques avec `npm test` (après démarrage du serveur de test), et vérifier la syntaxe avec `node --check server.js`.
 
 Démarrer avec npm start. L'application écoute sur le port fourni par PORT (3000 par défaut). Le site public s'ouvre à la racine ; le bouton « Espace membre » ouvre la connexion.
 
