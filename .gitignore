@@ -1,19 +1,16 @@
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs & temporaires
+node_modules/
+/data/
+/storage/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
 *.log
 *.tmp
-*.bak
-
-# Node (si outillage local ajouté plus tard)
-node_modules/
-
-# Sauvegardes locales de la base (ne pas committer)
-las-members.backup.sqlite
-*.sqlite.bak
-
-# IDE
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/

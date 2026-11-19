@@ -1,0 +1,24 @@
+{
+  "name": "asbl-las-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portail public et espace membre sécurisé de l'ASBL Les Amis de la Semence",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:init": "node scripts/init-db.js",
+    "admin:create": "node scripts/create-admin.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2"
+  }
+}
