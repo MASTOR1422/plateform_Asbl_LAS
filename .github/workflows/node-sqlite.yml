@@ -1,0 +1,54 @@
+name: Node SQLite checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check JavaScript syntax
+        run: |
+          node --check server.js
+          node --check public/app.js
+          node --check scripts/init-db.js
+          node --check scripts/create-admin.js
+          node --check scripts/smoke-test.js
+      - name: Initialize temporary SQLite database
+        run: npm run db:init
+      - name: Create temporary administrator
+        run: npm run admin:create -- admin "LAS CI Admin" "LAS-CI-Test-Password-2026!"
+      - name: Start application and run HTTP smoke tests
+        env:
+          NODE_ENV: test
+          LAS_SESSION_SECRET: ci-only-session-secret-with-more-than-32-characters
+          PORT: 3187
+          TEST_ADMIN_USERNAME: admin
+          TEST_ADMIN_PASSWORD: LAS-CI-Test-Password-2026!
+        run: |
+          npm start > /tmp/asbl-las.log 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3187/api/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:3187/api/health
+          npm test
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/asbl-las.log || true
