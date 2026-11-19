@@ -1,134 +1,60 @@
-# ASBL LES AMIS DE LA SEMENCE (LAS) — Portail statique
+# ASBL Les Amis de la Semence — Portail Node.js + SQLite
 
-> **AVERTISSEMENT DE SÉCURITÉ : NE PAS UTILISER EN PRODUCTION.**
-> Cette version télécharge une base SQLite dans le navigateur et applique les rôles côté client. Les informations stockées dans cette base ne sont pas protégées par l'écran de connexion. GitHub Pages publie un site accessible au public même si le dépôt source est privé. Une migration vers une API serveur et une base privée est nécessaire avant tout usage avec des données réelles.
+Portail web public pour les annonces et événements, avec espace membre protégé par identifiant et mot de passe.
 
+## Architecture
 
-Portail de gestion des membres et cotisations, **100 % statique**, déployable sur
-GitHub Pages. Aucun Supabase, aucun Vercel, aucun backend. La base de données est
-un fichier **SQLite** (`las-members.sqlite`) logé dans le dépôt, lu dans le
-navigateur via **sql.js** (SQLite compilé en WebAssembly).
+- Node.js 22+, Express 5 et SQLite (better-sqlite3).
+- Aucun Cloudflare, Supabase ou Vercel.
+- Données persistantes dans data/, photos dans storage/photos/, documents dans storage/documents/.
+- Ces répertoires sont privés, hors de public/ et exclus de Git par .gitignore.
+- Les fichiers téléversés ne sont jamais commités dans le dépôt.
 
-## Contenu du dossier
+## Installation sur un serveur classique
 
-```
-las-static-site/
-├── index.html              ← application (HTML + CSS + JS, autonome)
-├── las-members.sqlite      ← base de données (membres, cotisations, utilisateurs)
-├── logo-las.jpg            ← logo officiel LAS
-├── 404.html                ← page d'erreur personnalisée
-├── .nojekyll               ← désactive Jekyll sur GitHub Pages
-└── README.md               ← ce fichier
-```
-
-## Déploiement sur GitHub Pages
-
-1. Créez un **dépôt privé** sur GitHub (GitHub Pro nécessaire pour Pages sur un
-   dépôt privé — la base contient des données membres : téléphones, adresses,
-   dates de naissance).
-2. Copiez tout le contenu de ce dossier à la racine du dépôt.
-3. **Settings → Pages → Source = Deploy from a branch**, branche `main`,
-   dossier `/ (root)`.
-4. Ajoutez un fichier `.gitignore` à la racine pour ne pas committer d'autres
-   fichiers sensibles (voir plus bas).
-5. Poussez. Le site est accessible à `https://<compte>.github.io/<dépôt>/`.
-
-> Le fichier `.nojekyll` est indispensable : sans lui, GitHub Pages traite le
-> dépôt avec Jekyll et peut ignorer certains fichiers.
-
-## Authentification
-
-L'authentification est **côté client** (PBKDF2-HMAC-SHA256, 100 000 itérations).
-Les utilisateurs et les *hashes* de mots de passe sont stockés dans la table
-`users` du fichier `las-members.sqlite`. Comme le dépôt est privé, seuls les
-administrateurs du dépôt peuvent lire ces *hashes*.
-
-**Comptes de démonstration :** les identifiants historiques ont été retirés de cette documentation car ils doivent être considérés comme compromis. Désactivez ces comptes dans toute copie existante et créez des identifiants uniques après migration vers une authentification serveur. N'utilisez pas de comptes ou mots de passe publiés dans Git.
-
-### Changer les mots de passe
-
-Ouvrez le portail en admin → icône **Utilisateurs** (bouclier) → créez de
-nouveaux comptes avec un mot de passe fort, puis exportez la base (voir
-ci-dessous) et re-commitez le fichier. Supprimez ensuite les comptes de démo en
-éditant la base (via le script `las-build-sqlite.py` ou en exportant après
-suppression).
-
-## Lecture et écriture de la base
-
-- **Lecture** : automatique. Au chargement, le navigateur récupère
-  `las-members.sqlite` et l'ouvre en mémoire avec sql.js. Recherches,
-  statistiques, répertoire et cotisations fonctionnent immédiatement.
-- **Écriture** (admin/trésorier/secrétaire) : les modifications (ajout de
-  membre, mois payés, nouvel utilisateur) sont appliquées **en mémoire**.
-  Elles ne sont **pas** écrites dans le fichier du dépôt automatiquement.
-  L'admin doit :
-  1. Cliquer sur l'icône **Exporter la base** (téléchargement) — un bandeau
-     orange signale les modifications non enregistrées.
-  2. Télécharger le nouveau `las-members.sqlite`.
-  3. Le **déposer dans le dépôt GitHub** (interface web : remplacer le fichier
-     puis *Commit changes*).
-  4. Attendre quelques secondes que GitHub Pages republie, puis recharger le
-     portail.
-
-C'est le modèle « Export + commit web » : simple, sans serveur, adapté à une ASBL.
-
-## Régénérer la base de zéro (données de démo)
+Prérequis : Node.js 22+, npm et un serveur disposant d'un disque persistant.
 
 ```bash
-python3 scripts/las-build-sqlite.py
+git clone https://github.com/MASTOR1422/plateform_Asbl_LAS.git
+cd plateform_Asbl_LAS
+git checkout migration/node-sqlite-public-portal
+npm install
+cp .env.example .env
 ```
 
-Ce script recrée `las-members.sqlite` avec le schéma et les données de démo.
-Utile pour repartir d'une base propre ou pour modifier les données de départ
-(éditez la liste `MEMBERS` dans le script).
+Définir dans .env un secret de session aléatoire d'au moins 32 caractères, puis configurer les chemins LAS_DATA_DIR, LAS_DB_PATH et LAS_STORAGE_DIR sur un volume persistant et sauvegardé. En production, utiliser HTTPS avec un reverse proxy et définir TRUST_PROXY=1 uniquement si l'application est derrière un proxy de confiance.
 
-## Schéma de la base
+Initialiser la base et les fiches initiales :
 
-- **members** : id, name, poste, phone, email, profession, birthdate,
-  birthplace, address, joined, asbl (OUI/NON), forum, status, photo_path
-- **member_payments** : member_id, payment_year, payment_month (1-12), paid,
-  updated_by, updated_at — clé primaire (member_id, payment_year, payment_month)
-- **users** : id, username (e-mail), display_name, role
-  (admin/tresorier/secretaire/membre), member_id, salt, password_hash,
-  iterations, active, created_at
-
-Cotisation mensuelle : **10 USD**.
-
-## Droits par rôle
-
-| Action                    | Admin | Trésorier | Secrétaire | Membre |
-|---------------------------|:-----:|:---------:|:----------:|:------:|
-| Lire le répertoire        |  oui  |   oui     |    oui     |  oui*  |
-| Coordonnées sensibles     |  oui  |   oui     |    oui     |  non   |
-| Ajouter / modifier membre |  oui  |   non     |    oui     |  non   |
-| Gérer les cotisations     |  oui  |   oui     |    non     |  non   |
-| Voir l'onglet Cotisations |  oui  |   oui     |    non     |  non   |
-| Gérer les utilisateurs    |  oui  |   non     |    non     |  non   |
-| Exporter la base          |  oui  |   non     |    non     |  non   |
-
-\* Le membre voit le répertoire sans les coordonnées sensibles (téléphone,
-e-mail, adresse, date de naissance).
-
-## Sécurité — limites importantes
-
-- Le fichier `.sqlite` contient **toutes** les données. Un dépôt privé GitHub
-  Pro limite la lecture aux administrateurs du dépôt, mais toute personne qui
-  clone le dépôt voit tout. N'ajoutez aux administrateurs du dépôt que des
-  personnes de confiance.
-- L'authentification côté client **n'est pas** une protection contre un
-  attaquant qui aurait accès au fichier `.sqlite` : il pourrait lire les
-  *hashes* et tenter de les casser. PBKDF2 (100 000 itérations) ralentit cette
-  attaque mais ne l'empêche pas. Pour des données très sensibles, envisagez un
-  hébergement avec backend (Supabase/Vercel) — l'option a été écartée ici pour
-  la simplicité.
-- Le portail est en `noindex` (hors moteurs de recherche) via la balise meta et
-  `robots.txt`.
-
-## `.gitignore` recommandé (à la racine du dépôt)
-
+```bash
+npm run db:init
 ```
-.DS_Store
-Thumbs.db
-*.log
-node_modules/
+
+Créer le premier administrateur (choisir son propre identifiant et un mot de passe long) :
+
+```bash
+npm run admin:create -- admin "Administrateur LAS" "RemplacerParUnMotDePasseLong!"
 ```
+
+Ne jamais publier le mot de passe, le fichier .env, data/las.sqlite ou le contenu de storage/.
+
+Démarrer avec npm start. L'application écoute sur le port fourni par PORT (3000 par défaut). Le site public s'ouvre à la racine ; le bouton « Espace membre » ouvre la connexion.
+
+## Fiches des membres
+
+Une fiche contient uniquement le nom complet, le numéro de téléphone et une photo de profil facultative. Le répertoire est consultable par les membres connectés et la recherche porte sur le nom. L'administrateur et le secrétaire peuvent créer et modifier les fiches ; seul l'administrateur peut les supprimer. Un membre peut téléverser ou remplacer sa propre photo, sans modifier les coordonnées d'un autre membre. Formats photo : JPEG, PNG et WEBP, 5 Mo maximum.
+
+La liste de départ est dans db/seed-members-from-las-list.sql. Les graphies et numéros doivent être vérifiés par LAS avant une première initialisation réelle.
+
+## Rôles
+
+- Administrateur : gestion des comptes, fiches, documents, publications et cotisations.
+- Secrétaire : gestion des fiches et publications.
+- Trésorier : cotisations et contributions de tontine.
+- Membre : consultation du répertoire, documents autorisés, tontine personnelle et mise à jour de sa propre photo.
+
+## Sauvegardes et exploitation
+
+Sauvegarder régulièrement la base SQLite et le dossier storage/ ensemble. Conserver les sauvegardes hors du serveur principal et tester leur restauration. Le disque d'hébergement doit être persistant : un hébergement éphémère peut effacer la base et les photos lors d'un redéploiement.
+
+Ne pas utiliser de données réelles avant d'avoir configuré HTTPS, le secret de session, les sauvegardes et un hébergement avec stockage persistant.
