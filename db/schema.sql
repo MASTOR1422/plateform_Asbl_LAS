@@ -1,20 +1,13 @@
 PRAGMA foreign_keys = ON;
 
+-- Données personnelles limitées à ce qui est nécessaire au répertoire LAS.
 CREATE TABLE IF NOT EXISTS members (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  poste TEXT,
-  profession TEXT,
-  phone TEXT,
-  email TEXT,
-  birthdate TEXT,
-  birthplace TEXT,
-  address TEXT,
-  joined TEXT,
-  asbl TEXT NOT NULL DEFAULT 'OUI' CHECK(asbl IN ('OUI','NON')),
-  forum TEXT NOT NULL DEFAULT 'Actif' CHECK(forum IN ('Actif','Inactif')),
-  created_at TEXT,
-  updated_at TEXT
+  phone TEXT NOT NULL,
+  profile_photo_path TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS member_payments (
